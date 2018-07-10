@@ -19,22 +19,16 @@ Organizations:
   - &OrdererOrg
     Name: OrdererMSP
     ID: OrdererMSP
-    MSPDir: crypto-config/ordererOrganizations/abc.me/msp # orderer domain (01)
+    MSPDir: crypto-config/ordererOrganizations/ORDERER_DOMAIN/msp # orderer domain (01)
 
-  - &OrgPor # Org(nameOrg)
-    Name: PorMSP # (nameOrg)MSP
-    ID: PorMSP # (nameOrg)MSP
-    MSPDir: crypto-config/peerOrganizations/iampo12.me/msp # Org domain (02)
-    AnchorPeers:
-      - Host: peer0.iampo12.me # peer0 (OrgDomain(02))
-        Port: 7051
+${ORG_LIST_PEER}
 
 Orderer: &OrdererDefaults
   # Orderer Type: The orderer implementation to start
   # Available types are "solo" and "kafka"
   OrdererType: solo
   Addresses:
-    - orderer.abc.me:7050 # orderer domain (01)
+    - orderer.ORDERER_DOMAIN:7050 # orderer domain (01)
   # Batch Timeout: The amount of time to wait before creating a batch
   BatchTimeout: 2s
   BatchSize:

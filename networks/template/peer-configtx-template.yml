@@ -1,0 +1,7 @@
+  - &Org${peerName} # Org(nameOrg)
+    Name: ${peerName}MSP # (nameOrg)MSP
+    ID: ${peerName}MSP # (nameOrg)MSP
+    MSPDir: crypto-config/peerOrganizations/${peerDomain}/msp # Org domain (02)
+    AnchorPeers:
+      - Host: peer0.${peerDomain} # peer0 (OrgDomain(02))
+        Port: 7051
