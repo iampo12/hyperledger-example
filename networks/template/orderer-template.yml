@@ -1,0 +1,6 @@
+OrdererOrgs:
+  - Name: ${ordererName}
+    Domain: ${ordererDomain} # orderer domain (01)
+    Specs:
+      - Hostname: orderer
+PeerOrgs:

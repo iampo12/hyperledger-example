@@ -1,0 +1,10 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: abc.me # orderer domain (01)
+    Specs:
+      - Hostname: orderer
+PeerOrgs:
+  - Name: Por # nameOrg
+    Domain: iampo12.me # Org domain (02)
+  # - Name: Por2 # nameOrg
+  #   Domain: iampo12.me222 # Org domain (02)

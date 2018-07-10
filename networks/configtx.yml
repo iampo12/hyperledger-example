@@ -1,0 +1,60 @@
+Profiles:
+  OneOrdererGenesis:
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *OrgPor
+  OneOrgChannel:
+    Consortium: SampleConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *OrgPor
+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererMSP
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/abc.me/msp # orderer domain (01)
+
+  - &OrgPor # Org(nameOrg)
+    Name: PorMSP # (nameOrg)MSP
+    ID: PorMSP # (nameOrg)MSP
+    MSPDir: crypto-config/peerOrganizations/iampo12.me/msp # Org domain (02)
+    AnchorPeers:
+      - Host: peer0.iampo12.me # peer0 (OrgDomain(02))
+        Port: 7051
+
+Orderer: &OrdererDefaults
+  # Orderer Type: The orderer implementation to start
+  # Available types are "solo" and "kafka"
+  OrdererType: solo
+  Addresses:
+    - orderer.abc.me:7050 # orderer domain (01)
+  # Batch Timeout: The amount of time to wait before creating a batch
+  BatchTimeout: 2s
+  BatchSize:
+    # Max Message Count: The maximum number of messages to permit in a batch
+    MaxMessageCount: 10
+    # Absolute Max Bytes: The absolute maximum number of bytes allowed for
+    # the serialized messages in a batch.
+    AbsoluteMaxBytes: 99 MB
+    # Preferred Max Bytes: The preferred maximum number of bytes allowed for
+    # the serialized messages in a batch. A message larger than the preferred
+    # max bytes will result in a batch larger than preferred max bytes.
+    PreferredMaxBytes: 512 KB
+  Kafka:
+    # Brokers: A list of Kafka brokers to which the orderer connects
+    # NOTE: Use IP:port notation
+    Brokers:
+      - 127.0.0.1:9092
+  # Organizations is the list of orgs which are defined as participants on
+  # the orderer side of the network
+  Organizations:
+
+Application: &ApplicationDefaults
+  Organizations:

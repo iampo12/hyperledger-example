@@ -1,0 +1,6 @@
+  - Name: ${peerName} # nameOrg
+    Domain: ${peerDomain} # Org domain (02)
+    Template:
+      Count: 1
+    Users:
+      Count: 1

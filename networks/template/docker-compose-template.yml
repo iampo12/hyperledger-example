@@ -1,0 +1,101 @@
+version: '2'
+
+networks:
+  devhyperledger:
+
+services:
+  ca.iampo12.me:
+    container_name: ca_iampo12
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca_iampo12
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.iampo12.me-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY
+    ports:
+      - "7054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./crypto-config/peerOrganizations/iampo12.me/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ./config/ca-server/ca-server-config.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+    networks:
+      - devhyperledger
+
+  orderer.abc.me:
+    container_name: orderer.abc.me
+    image: hyperledger/fabric-orderer
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/devnetwork/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/devnetwork/orderer/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderer
+    command: orderer
+    ports:
+      - 7050:7050
+    volumes:
+      - ./config/:/etc/hyperledger/devnetwork/configtx
+      - ./crypto-config/ordererOrganizations/abc.me/orderers/orderer.abc.me/:/etc/hyperledger/devnetwork/orderer
+    networks:
+      - devhyperledger
+
+  peer0.iampo12.me:
+    container_name: peer0.iampo12.me
+    image: hyperledger/fabric-peer
+    environment:
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      # CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_${NETWORK}
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=networks_devhyperledger
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=INFO
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/devnetwork/users/Admin@iampo12.me/msp # /etc/hyperledger/devnetwork/peer/msp # TODO: test change location
+      # - CORE_PEER_TLS_ENABLED=true
+      # - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      # - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      # - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # ---------
+      - CORE_PEER_ID=peer0.iampo12.me
+      - CORE_PEER_LOCALMSPID=PorMSP
+      - CORE_PEER_ADDRESS=peer0.iampo12.me:7051
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 7053:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./config:/etc/hyperledger/devnetwork/configtx
+      - ./crypto-config/peerOrganizations/iampo12.me/peers/peer0.iampo12.me/:/etc/hyperledger/devnetwork/peer
+      - ./crypto-config/peerOrganizations/iampo12.me/users/:/etc/hyperledger/devnetwork/users
+    depends_on:
+      - orderer.abc.me
+    networks:
+    - devhyperledger
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=INFO
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.iampo12.me:7051
+      - CORE_PEER_LOCALMSPID=PorMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/devnetwork/users/Admin@iampo12.me/msp
+      - CORE_CHAINCODE_KEEPALIVE=10
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/iampo12.me/users/:/etc/hyperledger/devnetwork/users
+      - ./../chaincode/:/opt/gopath/src/github.com
+    networks:
+    - devhyperledger
