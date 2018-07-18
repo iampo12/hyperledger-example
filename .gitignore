@@ -5,3 +5,4 @@ networks/crypto-config/
 networks/config/*.tx
 networks/config/*.block
 networks/crypto-config.yml
+networks/configtx.yml
